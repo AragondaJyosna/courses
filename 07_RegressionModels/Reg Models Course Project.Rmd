@@ -34,15 +34,16 @@ In this report, I explore the relationship between a set of variables and miles 
 * Is an automatic or manual transmission better for MPG?
 * What is the MPG difference between automatic and manual transmissions?
 
-### Conclusions
+**There is likely more to explore with subject matter experts but based on my analysis to-date, I concluded that there was no difference in mpc between automatic and manual transmissions.**
+
+### Approach
 Initially I fit a linear model to the predict `mpg`. Although that analysis did indicate that the `mpg` increased for manual transmissions, that relationship was **not** statistically significant. Furthermore the residuals of that model were not normally distributed.
 
 The fit and residual distribution appeared to be affected by outliers. Therefore, I then decided to fit a linear model to the `log` of `mpg`. That model had the counter-intuitive result that the `mpg` decreased for manual transmissions. That relationship also was **not** statistically significant. Visually, the residuals of that model appeared to be slightly more normal but still failed the Shapiro Wilk normality test at the 5% significance level.
 
-**There is likely more to explore with subject matter experts but based on my analysis to-date, I concluded that there was no difference in mpc between automatic and manual transmissions.**
 
 ### Additional Information
-The RMarkdown file used to prepare this report is available at
+The RMarkdown file used to prepare this report is available at https://raw.githubusercontent.com/rajesh06/courses/master/07_RegressionModels/Reg%20Models%20Course%20Project.Rmd
 
 
 ## Data
@@ -130,7 +131,7 @@ str_break(citation(package = "gridExtra")$textVersion)
 \pagebreak
 
 ## Appendix
-```{r fig.cap='Correlation with Numeric Variables', echo=FALSE, fig.height=6, warning=FALSE}
+```{r fig.cap='Correlation with Numeric Variables', echo=FALSE, fig.height=6.5, warning=FALSE}
 par(mfrow = c(3, 2))
 boxplot(disp ~ am, mtcars, 
   xlab = 'Transmission (0 = automatic, 1 = manual)',
