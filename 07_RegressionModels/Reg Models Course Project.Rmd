@@ -34,7 +34,7 @@ In this report, I explore the relationship between a set of variables and miles 
 * Is an automatic or manual transmission better for MPG?
 * What is the MPG difference between automatic and manual transmissions?
 
-**There is likely more to explore with subject matter experts but based on my analysis to-date, I concluded that there was no difference in mpc between automatic and manual transmissions.**
+**There is likely more to explore with subject matter experts but based on my analysis to-date, I concluded that there was no difference in MPG between automatic and manual transmissions.**
 
 ### Approach
 Initially I fit a linear model to the predict `mpg`. Although that analysis did indicate that the `mpg` increased for manual transmissions, that relationship was **not** statistically significant. Furthermore the residuals of that model were not normally distributed.
