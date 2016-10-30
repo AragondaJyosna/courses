@@ -1,0 +1,185 @@
+---
+title: "Coursera Regression Models Course Project"
+author: "Rajesh Sahasrabuddhe"
+date: "October 30, 2016"
+output: 
+  pdf_document: 
+    fig_caption: yes
+    fig_crop: no
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+str_break = function(x, width = 80L) {
+  n = nchar(x)
+  if (n <= width) return(x)
+  n1 = seq(1L, n, by = width)
+  n2 = seq(width, n, by = width)
+  if (n %% width != 0) n2 = c(n2, n)
+  substring(x, n1, n2)
+}
+```
+
+```{r load packages, message=FALSE, warning=FALSE, include=FALSE}
+library(ggplot2)
+library(gridExtra)
+```
+
+
+## Executive Summary
+
+In this report, I explore the relationship between a set of variables and miles per gallon (MPG) in order to answer the following two questions:
+
+* Is an automatic or manual transmission better for MPG?
+* What is the MPG difference between automatic and manual transmissions?
+
+### Conclusions
+Initially I fit a linear model to the predict `mpg`. Although that analysis did indicate that the `mpg` increased for manual transmissions, that relationship was **not** statistically significant. Furthermore the residuals of that model were not normally distributed.
+
+The fit and residual distribution appeared to be affected by outliers. Therefore, I then decided to fit a linear model to the `log` of `mpg`. That model had the counter-intuitive result that the `mpg` decreased for manual transmissions. That relationship also was **not** statistically significant. Visually, the residuals of that model appeared to be slightly more normal but still failed the Shapiro Wilk normality test at the 5% significance level.
+
+**There is likely more to explore with subject matter experts but based on my analysis to-date, I concluded that there was no difference in mpc between automatic and manual transmissions.**
+
+### Additional Information
+The RMarkdown file used to prepare this report is available at
+
+
+## Data
+I used the `mtcars` dataset to prepare this analysis. The data was extracted from the 1974 Motor Trend US magazine, and comprises fuel consumption and 10 aspects of automobile design and performance for 32 automobiles (1973-74 models).
+
+The transmission type is coded as the `am` variable with (0 = automatic, 1 = manual).
+
+Certain variables are coded as `numerics`, but are actually `factors`. We convert those variables prior to analysis.
+```{r, message=FALSE, warning=FALSE, include=FALSE}
+mtcars$am <- factor(mtcars$am)
+mtcars$vs <- factor(mtcars$vs)
+mtcars$cyl <- factor(mtcars$cyl)
+mtcars$gear <- factor(mtcars$gear)
+mtcars$carb <- factor(mtcars$carb)
+```
+
+
+The dataset also includes the following numeric variables:
+
+- **disp**: Displacement (cu.in.)  
+- **hp**: Gross horsepower  
+- **drat**: Rear axle ratio  
+- **wt**: Weight (1000 lbs)  
+- **qsec**:	1/4 mile time  
+
+and the following factor variables:  
+
+- **vs**: Whether the engine is a 'v' or straight  
+- **cyl**: Number of cylinders  
+- **gear**: Number of forward gears  
+- **carb**: Number of carburetors  
+
+## Analysis
+
+### Correlation
+In fitting the linear model, we want to make sure that we include variables correlated with `am` so that we don't increase the bias of the coefficient of `am`. In Figure 1, I review the correlation of `am` with the numeric variables using box plots.  In Figure 2, I review the correlation of `am` with factor variables. I also reviewed the `pairs` plot of the mtcars dataset. My initial conclusions are as follows:
+
+- All numeric variables with the exception of `qsec` appear to be correlated with the `am`. Intuitively we would not want to include `qsec` since, as with `mpg`, this is an outcome rather than a feature. Similarly, we noted that `hp` also is correlated the the remaining variables. This variable would also seem to be an outcome rather than a feature.
+- The `gear` variable appears to be correlated with `am`. Based on the plots of the other factor variables, it is not clear as to whether there is correlation.
+
+### Linear Model
+We fit our base linear model:
+
+```{r base fit}
+mtcars$logmpg <- log(mtcars$mpg)
+fit0 <- lm(logmpg ~ am + disp + drat + wt + gear, data = mtcars)
+shapiro.test(fit0$residuals)
+```
+
+We also fit models with the excluded factor variables individually. Anova testing reveled that none of the additional factor variables improved the fit. (The code for that testing is included in the `Rmd` file.) We are therefore satisfied with our base model. We present a summary of that model below:
+```{r base lm}
+summary(fit0)
+```
+
+
+```{r alt fits, eval=FALSE, include=FALSE}
+#I present the residual plot of the linear model in the Appendix.
+)
+fit_qsec <- lm(logmpg ~ am + disp + hp + drat + wt + gear + qsec, data = mtcars)
+fit_cyl <- lm(logmpg ~ am + disp + hp + drat + wt + gear + cyl, data = mtcars)
+fit_carb <- lm(logmpg ~ am + disp + hp + drat + wt + gear + carb, data = mtcars)
+fit_vs <- lm(logmpg ~ am + disp + hp + drat + wt + gear + vs, data = mtcars)
+```
+
+
+```{r anovs, eval=FALSE, include=FALSE}
+#If we apply ANOVA tests between the base linear model and the alternatives:
+
+anova(fit0, fit_qsec)
+anova(fit0, fit_cyl)
+anova(fit0, fit_carb)
+anova(fit0, fit_vs)
+```
+
+
+## Citations
+
+The report was prepared using `mtcars` dataset from the `datasets` package in `R` and additional `R` packages listed below.
+```{r citations, echo=FALSE, message=FALSE, warning=FALSE}
+str_break(citation(package = "base")$textVersion)
+str_break(citation(package = "ggplot2")$textVersion)
+str_break(citation(package = "gridExtra")$textVersion)
+
+```
+\pagebreak
+
+## Appendix
+```{r fig.cap='Correlation with Numeric Variables', echo=FALSE, fig.height=6, warning=FALSE}
+par(mfrow = c(3, 2))
+boxplot(disp ~ am, mtcars, 
+  xlab = 'Transmission (0 = automatic, 1 = manual)',
+  ylab = 'Displacement (cu.in.)')
+boxplot(hp ~ am, mtcars,
+  xlab = 'Transmission (0 = automatic, 1 = manual)',
+  ylab = 'Gross horsepower')
+boxplot(drat ~ am, mtcars,
+  xlab = 'Transmission (0 = automatic, 1 = manual)',
+  ylab = 'Rear axle ratio')
+boxplot(wt ~ am , mtcars,
+  xlab = 'Transmission (0 = automatic, 1 = manual)',
+  ylab = 'Weight (1000 lbs)')
+boxplot(qsec ~ am , mtcars,
+  xlab = 'Transmission (0 = automatic, 1 = manual)',
+  ylab = '1/4 mile time')
+```
+
+```{r fig.cap='Correlation with Factor Variables', echo=FALSE, fig.height=7, warning=FALSE}
+g1 <- ggplot(data = mtcars, mapping = aes(x = am, y = vs)) + 
+  geom_jitter(width = 0.2, height = 0.2) + 
+  scale_x_discrete(name = 'Transmission (0 = automatic, 1 = manual)') +
+  scale_y_discrete(name = "Engine Config (0 = V, 1 = straight)")
+
+g2 <- ggplot(data = mtcars, mapping = aes(x = am, y = cyl)) + 
+  geom_jitter(width = 0.2, height = 0.2) + 
+  scale_x_discrete(name = 'Transmission (0 = automatic, 1 = manual)') +
+  scale_y_discrete(name = "Number of cylinders")
+
+g3 <- ggplot(data = mtcars, mapping = aes(x = am, y = gear)) + 
+  geom_jitter(width = 0.2, height = 0.2) + 
+  scale_x_discrete(name = 'Transmission (0 = automatic, 1 = manual)') +
+  scale_y_discrete(name = "Number of Forward Gears")
+
+g4 <- ggplot(data = mtcars, mapping = aes(x = am, y = carb)) + 
+  geom_jitter(width = 0.2, height = 0.2) + 
+  scale_x_discrete(name = 'Transmission (0 = automatic, 1 = manual)') +
+  scale_y_discrete(name = "Number of carburetors")
+
+grid.arrange(g1, g2, g3, g4, ncol=2)
+```
+
+
+```{r fig.cap="Residual Plots: Base Model", echo=FALSE, fig.height=7, warning=FALSE}
+par(mfrow = c(3, 2))
+plot(fit0)
+hist(fit0$residuals)
+
+
+```
+
+
